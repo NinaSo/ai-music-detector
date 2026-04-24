@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+raw/
+*.egg-info/
+dist/
+build/
+# Intermediate training runs (keep artifacts/all/ — the main run)
+artifacts/smoke/
+artifacts/tmp_*/
+artifacts/holdout_suite/
+artifacts/holdout_*/
+artifacts/adapt_*/
+artifacts/clap_audio_only/
+artifacts/fmc_source_logreg/
+artifacts/alignment/
