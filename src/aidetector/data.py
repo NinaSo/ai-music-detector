@@ -12,6 +12,7 @@ from aidetector.audio_io import load_audio
 
 
 REQUIRED_COLUMNS = {"audio_path", "label"}
+_MISSING_GROUP = "__missing_group__"
 
 
 @dataclass
@@ -77,7 +78,7 @@ def split_df_grouped(
     if group_col not in df.columns:
         raise ValueError(f"group_col `{group_col}` not found in manifest")
 
-    groups = df[group_col].fillna("__missing_group__").astype(str)
+    groups = df[group_col].fillna(_MISSING_GROUP).astype(str)
     unique_groups = groups.nunique()
     if unique_groups < 3:
         raise ValueError(
@@ -90,7 +91,7 @@ def split_df_grouped(
     test_df = df.iloc[test_idx].reset_index(drop=True)
 
     rel_val = val_size / (1.0 - test_size)
-    train_val_groups = train_val_df[group_col].fillna("__missing_group__").astype(str)
+    train_val_groups = train_val_df[group_col].fillna(_MISSING_GROUP).astype(str)
     splitter_val = GroupShuffleSplit(n_splits=1, test_size=rel_val, random_state=seed)
     train_idx, val_idx = next(splitter_val.split(train_val_df, groups=train_val_groups))
     train_df = train_val_df.iloc[train_idx].reset_index(drop=True)
@@ -112,7 +113,7 @@ def _sample_groups_to_target_rows(
     target_rows: int,
     seed: int,
 ) -> pd.DataFrame:
-    groups = df[group_col].fillna("__missing_group__").astype(str)
+    groups = df[group_col].fillna(_MISSING_GROUP).astype(str)
     group_sizes = df.assign(_g=groups).groupby("_g").size().reset_index(name="n")
     group_sizes = group_sizes.sample(frac=1.0, random_state=seed).reset_index(drop=True)
 
@@ -164,7 +165,7 @@ def split_df_holdout_ai_source(
         raise ValueError("Remaining train/val pool has a single class after holdout split")
 
     if group_col and group_col in remain_df.columns:
-        remain_groups = remain_df[group_col].fillna("__missing_group__").astype(str)
+        remain_groups = remain_df[group_col].fillna(_MISSING_GROUP).astype(str)
         splitter_val = GroupShuffleSplit(n_splits=1, test_size=val_size, random_state=seed)
         train_idx, val_idx = next(splitter_val.split(remain_df, groups=remain_groups))
         train_df = remain_df.iloc[train_idx].reset_index(drop=True)

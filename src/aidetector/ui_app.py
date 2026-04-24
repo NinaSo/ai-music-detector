@@ -70,6 +70,38 @@ def _get_matplotlib_pyplot():
     return plt
 
 
+def _load_font(size: int = 24):
+    """Load a font cross-platform, falling back to PIL default if none found."""
+    from PIL import ImageFont
+    import sys
+
+    candidates = []
+    if sys.platform == "darwin":
+        candidates = [
+            "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/Library/Fonts/Arial Unicode.ttf",
+        ]
+    elif sys.platform.startswith("win"):
+        candidates = [
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/segoeui.ttf",
+        ]
+    else:
+        candidates = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        ]
+
+    for path in candidates:
+        try:
+            return ImageFont.truetype(path, size)
+        except Exception:
+            continue
+    return ImageFont.load_default()
+
+
 def _get_pil_modules():
     try:
         from PIL import Image, ImageDraw, ImageFont
@@ -97,14 +129,9 @@ def _draw_grouped_bar_png(
 
     img = Image.new("RGB", (w, h), (250, 251, 253))
     d = ImageDraw.Draw(img)
-    try:
-        f_title = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 40)
-        f_text = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", 24)
-        f_small = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", 20)
-    except Exception:
-        f_title = ImageFont.load_default()
-        f_text = ImageFont.load_default()
-        f_small = ImageFont.load_default()
+    f_title = _load_font(size=40)
+    f_text = _load_font(size=24)
+    f_small = _load_font(size=20)
 
     d.text((margin_l, 28), title, fill=(25, 35, 52), font=f_title)
 
@@ -175,14 +202,9 @@ def _draw_heatmap_png(
 
     img = Image.new("RGB", (w, h), (250, 251, 253))
     d = ImageDraw.Draw(img)
-    try:
-        f_title = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 38)
-        f_text = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", 22)
-        f_small = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", 18)
-    except Exception:
-        f_title = ImageFont.load_default()
-        f_text = ImageFont.load_default()
-        f_small = ImageFont.load_default()
+    f_title = _load_font(size=38)
+    f_text = _load_font(size=22)
+    f_small = _load_font(size=18)
 
     d.text((margin_l, 34), title, fill=(25, 35, 52), font=f_title)
 
@@ -280,7 +302,8 @@ def run_training(cmd: list[str], log_placeholder) -> tuple[int, str]:
     )
     lines: list[str] = []
     all_lines: list[str] = []
-    assert proc.stdout is not None
+    if proc.stdout is None:
+        raise RuntimeError("Failed to open subprocess stdout pipe")
     for line in proc.stdout:
         cleaned = line.rstrip()
         all_lines.append(cleaned)
@@ -714,7 +737,8 @@ def page_predict() -> None:
 
     run_dir_text = st.text_input(
         "Run Directory",
-        value="/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/artifacts/all",
+        value="artifacts/all",
+        help="Path to a training output directory containing cnn/, baseline/, combined_metrics.json",
     )
     run_dir = Path(run_dir_text)
     defaults = find_default_paths(run_dir)
@@ -736,7 +760,8 @@ def page_predict() -> None:
     fmc_source_model = Path(
         st.text_input(
             "FMC Source Model Path (optional, used when prediction is AI)",
-            value="/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/artifacts/fmc_source_logreg/fmc_source_logreg.joblib",
+            value="",
+            help="Path to fmc_source_logreg.joblib; leave blank to skip source attribution",
         ).strip()
     )
     st.caption(
@@ -931,7 +956,8 @@ def page_further_training() -> None:
 
     old_run_dir_text = st.text_input(
         "Old Run Directory",
-        value="/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/artifacts/all",
+        value="artifacts/all",
+        help="Path to the existing training run you want to continue from",
     )
     old_run_dir = Path(old_run_dir_text)
     old_paths = find_default_paths(old_run_dir)
@@ -949,19 +975,22 @@ def page_further_training() -> None:
     holdout_summary_path = Path(
         st.text_input(
             "Holdout Summary JSON",
-            value="/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/artifacts/holdout_suite/holdout_summary.json",
+            value="",
+            help="Path to holdout_suite/holdout_summary.json",
         )
     )
     fmc_metrics_path = Path(
         st.text_input(
             "FMC Source Metrics JSON",
-            value="/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/artifacts/fmc_source_logreg/metrics.json",
+            value="",
+            help="Path to fmc_source_logreg/metrics.json",
         )
     )
     clap_metrics_path = Path(
         st.text_input(
             "CLAP Metrics JSON",
-            value="/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/artifacts/clap_audio_only/metrics.json",
+            value="",
+            help="Path to clap_audio_only/metrics.json",
         )
     )
     before_combined_path = Path(
@@ -973,7 +1002,8 @@ def page_further_training() -> None:
     after_combined_path = Path(
         st.text_input(
             "CNN After (combined_metrics.json)",
-            value="/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/artifacts/adapt_suno_v1/combined_metrics.json",
+            value="",
+            help="Path to a newer run's combined_metrics.json for comparison",
         )
     )
 
@@ -1019,7 +1049,8 @@ def page_further_training() -> None:
     export_dir = Path(
         st.text_input(
             "PNG Export Directory",
-            value="/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/report/figures",
+            value="report/figures",
+            help="Directory where dashboard PNG plots will be saved",
         ).strip()
     )
     if st.button("Export Dashboard Plots (PNG)"):
@@ -1080,7 +1111,8 @@ def page_further_training() -> None:
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_dir_text = st.text_input(
         "New Output Directory",
-        value=f"/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/artifacts/ui_runs/run_{now}",
+        value=f"artifacts/ui_runs/run_{now}",
+        help="Where to write the new training run's outputs",
     )
     output_dir = Path(output_dir_text)
 

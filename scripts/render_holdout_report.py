@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 
-def f(v: float | int | None, digits: int = 4) -> str:
+def fmt_metric(v: float | int | None, digits: int = 4) -> str:
     if v is None:
         return "-"
     return f"{float(v):.{digits}f}"
@@ -46,14 +46,14 @@ def build_report(summary: dict) -> str:
             + " | ".join(
                 [
                     str(source),
-                    f(threshold),
-                    f(cnn_test_default.get("accuracy")),
-                    f(cnn_test_cal.get("accuracy")),
-                    f(cnn_test_cal.get("auroc")),
-                    f(cnn_test_cal.get("auprc")),
-                    f(baseline_test.get("accuracy")),
-                    f(baseline_test.get("auroc")),
-                    f(baseline_test.get("auprc")),
+                    fmt_metric(threshold),
+                    fmt_metric(cnn_test_default.get("accuracy")),
+                    fmt_metric(cnn_test_cal.get("accuracy")),
+                    fmt_metric(cnn_test_cal.get("auroc")),
+                    fmt_metric(cnn_test_cal.get("auprc")),
+                    fmt_metric(baseline_test.get("accuracy")),
+                    fmt_metric(baseline_test.get("auroc")),
+                    fmt_metric(baseline_test.get("auprc")),
                 ]
             )
             + " |"
@@ -68,14 +68,14 @@ def build_report(summary: dict) -> str:
     cnn_s = summary.get("cnn_summary", {})
     base_s = summary.get("baseline_summary", {})
     lines.append(
-        f"| CNN | {f(cnn_s.get('accuracy_mean'))} +/- {f(cnn_s.get('accuracy_std'))} "
-        f"| {f(cnn_s.get('auroc_mean'))} +/- {f(cnn_s.get('auroc_std'))} "
-        f"| {f(cnn_s.get('auprc_mean'))} +/- {f(cnn_s.get('auprc_std'))} |"
+        f"| CNN | {fmt_metric(cnn_s.get('accuracy_mean'))} +/- {fmt_metric(cnn_s.get('accuracy_std'))} "
+        f"| {fmt_metric(cnn_s.get('auroc_mean'))} +/- {fmt_metric(cnn_s.get('auroc_std'))} "
+        f"| {fmt_metric(cnn_s.get('auprc_mean'))} +/- {fmt_metric(cnn_s.get('auprc_std'))} |"
     )
     lines.append(
-        f"| Baseline | {f(base_s.get('accuracy_mean'))} +/- {f(base_s.get('accuracy_std'))} "
-        f"| {f(base_s.get('auroc_mean'))} +/- {f(base_s.get('auroc_std'))} "
-        f"| {f(base_s.get('auprc_mean'))} +/- {f(base_s.get('auprc_std'))} |"
+        f"| Baseline | {fmt_metric(base_s.get('accuracy_mean'))} +/- {fmt_metric(base_s.get('accuracy_std'))} "
+        f"| {fmt_metric(base_s.get('auroc_mean'))} +/- {fmt_metric(base_s.get('auroc_std'))} "
+        f"| {fmt_metric(base_s.get('auprc_mean'))} +/- {fmt_metric(base_s.get('auprc_std'))} |"
     )
 
     lines.append("")

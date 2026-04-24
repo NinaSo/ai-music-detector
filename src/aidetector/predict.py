@@ -168,10 +168,13 @@ def main() -> None:
     threshold = float(args.threshold)
     threshold_source = "arg"
     if args.threshold_json is not None:
-        with open(args.threshold_json, "r", encoding="utf-8") as f:
-            t = json.load(f)
+        try:
+            with open(args.threshold_json, "r", encoding="utf-8") as fh:
+                t = json.load(fh)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"threshold_json is not valid JSON: {args.threshold_json}") from exc
         if "threshold" not in t:
-            raise ValueError(f"threshold json missing `threshold`: {args.threshold_json}")
+            raise ValueError(f"threshold_json missing required key `threshold`: {args.threshold_json}")
         threshold = float(t["threshold"])
         threshold_source = str(args.threshold_json)
 
