@@ -1,0 +1,33 @@
+{
+  "manifest": "/Users/ns_workstation23/Documents/AI_ML/genAI/final_capstone/data/manifests/combined.csv",
+  "alignment": {},
+  "cnn": {
+    "test": {
+      "accuracy": 0.8816655694535879,
+      "auroc": 0.9909874050714657,
+      "auprc": 0.9955229775782062
+    }
+  },
+  "baseline": {
+    "features": [
+      "duration_sec",
+      "loudness_db",
+      "zero_crossing_rate"
+    ],
+    "dropped_corrupt": {
+      "train": 14,
+      "val": 2,
+      "test": 0
+    },
+    "val": {
+      "accuracy": 0.8686167575607338,
+      "auroc": 0.8462241578456231,
+      "auprc": 0.8574354191781717
+    },
+    "test": {
+      "accuracy": 0.8683344305464121,
+      "auroc": 0.8527303637209699,
+      "auprc": 0.8693693333973214
+    }
+  }
+}
